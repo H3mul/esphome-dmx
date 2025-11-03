@@ -35,18 +35,18 @@ dmx:
 # DMX outputs
 output:
   - platform: dmx
-    channel: 1
     dmx_bus_id: dmx_bus_a
+    channel: 1
     id: dmx_output_1
 
   - platform: dmx
-    channel: 2
     dmx_bus_id: dmx_bus_a
+    channel: 2
     id: dmx_output_2
 
   - platform: dmx
-    channel: 3
     dmx_bus_id: dmx_bus_a
+    channel: 3
     id: dmx_output_3
 
 # Example: Use DMX outputs with lights

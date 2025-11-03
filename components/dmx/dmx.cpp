@@ -1,5 +1,7 @@
 #include "dmx.h"
+#include "dmx/include/types.h"
 #include "esphome/core/log.h"
+#include <string.h>
 
 namespace esphome::dmx {
 
@@ -21,7 +23,7 @@ void DMXComponent::setup() {
               this->enable_pin_ != nullptr ? this->enable_pin_->get_pin() : -1);
 
   // Initialize DMX data array
-  memset(this->dmx_data_, 0, sizeof(this->dmx_data_));
+  memset(this->dmx_data_, 0, DMX_PACKET_SIZE);
 
   this->initialized_ = true;
   ESP_LOGCONFIG(TAG, "DMX setup complete");
@@ -32,21 +34,8 @@ void DMXComponent::loop() {
     return;
   }
 
-  // Send DMX packet
-  dmx_packet_t packet;
-  packet.sc = DMX_SC;
-  packet.size = DMX_PACKET_SIZE;
-
-  // Copy data to packet
-  memcpy(packet.data, this->dmx_data_, DMX_PACKET_SIZE);
-
-  // Write the DMX packet
-  dmx_write(this->dmx_port_id_, &packet, DMX_TIMEOUT_TICK);
-
-  // Send the packet
-  dmx_send(this->dmx_port_id_, DMX_PACKET_SIZE);
-
-  // Wait for transmission to complete
+  dmx_write(this->dmx_port_id_, this->dmx_data_, DMX_PACKET_SIZE);
+  dmx_send(this->dmx_port_id_);
   dmx_wait_sent(this->dmx_port_id_, DMX_TIMEOUT_TICK);
 }
 

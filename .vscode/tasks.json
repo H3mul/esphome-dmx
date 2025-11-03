@@ -1,0 +1,24 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Generate compile_commands.json",
+      "type": "shell",
+      "command": "bash",
+      "args": [
+        "-c",
+        "BUILD_DIR=$(ls .esphome/build/ | head -1) && cd .esphome/build/$BUILD_DIR && pio run --target compiledb && ln -sf $(git rev-parse --show-toplevel)/.esphome/build/$BUILD_DIR/compile_commands.json $(git rev-parse --show-toplevel)/compile_commands.json"
+      ],
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared",
+        "showReuseMessage": true,
+        "clear": false
+      },
+      "problemMatcher": []
+    }
+  ]
+}

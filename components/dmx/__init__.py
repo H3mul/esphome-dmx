@@ -47,4 +47,7 @@ async def to_code(config):
         cg.add(var.set_dmx_port_id(conf[CONF_DMX_PORT_ID]))
 
     # Add esp_dmx library once
-    cg.add_library("someweisguy/esp_dmx", "4.1.0")
+    cg.add_library(
+        name="esp_dmx", 
+        repository="https://github.com/H3mul/esp_dmx",
+        version=None)

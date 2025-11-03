@@ -18,7 +18,6 @@ Diagnostics:
   ClangTidy:
     Add:
       - readability-*
-      - modernize-*
       - performance-*
       - bugprone-*
     Remove:
@@ -26,7 +25,6 @@ Diagnostics:
       - modernize-use-trailing-return-type
       - readability-magic-numbers
       - readability-uppercase-literal-suffix
-      - modernize-avoid-c-arrays
 
 Completion:
   AllScopes: true
