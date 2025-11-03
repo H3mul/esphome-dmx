@@ -1,0 +1,202 @@
+{
+  "folders": [
+    {
+      "name": "ESPHome DMX Component",
+      "path": "."
+    }
+  ],
+  "settings": {
+    // Clangd Language Server Configuration
+    "clangd.path": "clangd",
+    "clangd.arguments": [
+      "--header-insertion=iwyu",
+      "--completion-style=detailed",
+      "--function-arg-placeholders",
+      "--fallback-style=Google",
+      "--all-scopes-completion",
+      "--cross-file-rename",
+      "--log=verbose",
+      "--pretty",
+      "--background-index",
+      "--clang-tidy",
+      "--suggest-missing-includes",
+      "--pch-storage=memory"
+    ],
+    // Disable C/C++ extension intellisense in favor of clangd
+    "C_Cpp.intelliSenseEngine": "disabled",
+    "C_Cpp.autocomplete": "disabled",
+    "C_Cpp.errorSquiggles": "disabled",
+    // File associations
+    "files.associations": {
+      "*.h": "cpp",
+      "*.cpp": "cpp",
+      "*.hpp": "cpp",
+      "*.ino": "cpp",
+      "*.yaml": "yaml",
+      "*.yml": "yaml"
+    },
+    // Editor settings
+    "editor.formatOnSave": true,
+    "editor.formatOnType": true,
+    "editor.insertSpaces": true,
+    "editor.tabSize": 2,
+    "editor.detectIndentation": false,
+    "editor.rulers": [
+      120
+    ],
+    "editor.wordWrap": "wordWrapColumn",
+    "editor.wordWrapColumn": 120,
+    // Python settings for ESPHome YAML validation
+    "python.defaultInterpreterPath": "/usr/bin/python3",
+    "yaml.schemas": {
+      "https://esphome.io/esphome.json": [
+        "*.yaml",
+        "*.yml"
+      ]
+    },
+    "yaml.validate": true,
+    "yaml.format.enable": true,
+    "yaml.format.singleQuote": false,
+    "yaml.format.bracketSpacing": true,
+    // File exclusions
+    "files.exclude": {
+      "**/.git": true,
+      "**/.DS_Store": true,
+      "**/node_modules": true,
+      "**/__pycache__": true,
+      "**/*.pyc": true,
+      ".pio": true,
+      ".vscode": false
+    },
+    // Search settings
+    "search.exclude": {
+      "**/node_modules": true,
+      "**/bower_components": true,
+      "**/*.code-search": true,
+      ".pio": true,
+      "**/__pycache__": true
+    },
+    // Git settings
+    "git.ignoreLimitWarning": true,
+    // Terminal settings
+    "terminal.integrated.defaultProfile.linux": "zsh",
+    // Language specific settings
+    "[cpp]": {
+      "editor.defaultFormatter": "llvm-vs-code-extensions.vscode-clangd",
+      "editor.formatOnSave": true,
+      "editor.formatOnType": true
+    },
+    "[c]": {
+      "editor.defaultFormatter": "llvm-vs-code-extensions.vscode-clangd",
+      "editor.formatOnSave": true,
+      "editor.formatOnType": true
+    },
+    "[yaml]": {
+      "editor.defaultFormatter": "redhat.vscode-yaml",
+      "editor.formatOnSave": true,
+      "editor.insertSpaces": true,
+      "editor.tabSize": 2
+    },
+    "[python]": {
+      "editor.defaultFormatter": "ms-python.python",
+      "editor.formatOnSave": true,
+      "editor.insertSpaces": true,
+      "editor.tabSize": 4
+    },
+    // Problem matchers
+    "problemMatcher": {
+      "owner": "clangd",
+      "fileLocation": [
+        "relative",
+        "${workspaceFolder}"
+      ],
+      "pattern": {
+        "regexp": "^(.*):(\\d+):(\\d+):\\s+(warning|error|info|note):\\s+(.*)$",
+        "file": 1,
+        "line": 2,
+        "column": 3,
+        "severity": 4,
+        "message": 5
+      }
+    }
+  },
+  "extensions": {
+    "recommendations": [
+      // Essential for C++ development with clangd
+      "llvm-vs-code-extensions.vscode-clangd",
+    ],
+    // Extensions to disable (conflicts with clangd)
+    "unwantedRecommendations": [
+      "ms-vscode.cpptools",
+      "ms-vscode.cpptools-extension-pack"
+    ]
+  },
+  "tasks": {
+    "version": "2.0.0",
+    "tasks": [
+      {
+        "label": "ESPHome: Validate Configuration",
+        "type": "shell",
+        "command": "esphome",
+        "args": [
+          "config",
+          "${file}"
+        ],
+        "group": "build",
+        "presentation": {
+          "echo": true,
+          "reveal": "always",
+          "focus": false,
+          "panel": "shared"
+        },
+        "problemMatcher": []
+      },
+      {
+        "label": "ESPHome: Compile",
+        "type": "shell",
+        "command": "esphome",
+        "args": [
+          "compile",
+          "${file}"
+        ],
+        "group": "build",
+        "presentation": {
+          "echo": true,
+          "reveal": "always",
+          "focus": false,
+          "panel": "shared"
+        },
+        "problemMatcher": []
+      },
+      {
+        "label": "Format C++ Files",
+        "type": "shell",
+        "command": "find",
+        "args": [
+          "components",
+          "-name",
+          "*.cpp",
+          "-o",
+          "-name",
+          "*.h",
+          "-exec",
+          "clang-format",
+          "-i",
+          "{}",
+          ";"
+        ],
+        "group": "build",
+        "presentation": {
+          "echo": true,
+          "reveal": "silent",
+          "focus": false,
+          "panel": "shared"
+        }
+      }
+    ]
+  },
+  "launch": {
+    "version": "0.2.0",
+    "configurations": []
+  }
+}

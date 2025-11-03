@@ -1,0 +1,5 @@
+/.venv
+/.esphome
+*.pyc
+*compile_commands.json
+*.cache

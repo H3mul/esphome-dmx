@@ -1,0 +1,14 @@
+version: "3"
+vars:
+  REPO_ROOT:
+    sh: "git rev-parse --show-toplevel"
+
+tasks:
+  compiledb:
+    desc: Generate compile_commands.json and symlink to root
+    vars:
+      BUILD_DIR:
+        sh: "ls .esphome/build/ | head -1"
+    cmds:
+      - cd .esphome/build/{{.BUILD_DIR}} && pio run --target compiledb
+      - ln -sf {{.REPO_ROOT}}/.esphome/build/{{.BUILD_DIR}}/compile_commands.json {{.REPO_ROOT}}/compile_commands.json

@@ -1,0 +1,37 @@
+CompileFlags:
+  CompilationDatabase: ./
+
+  Add:
+    # Additional component includes
+    - -I./components
+    - -I./components/dmx
+
+  Remove:
+    # Remove problematic flags that might interfere
+    - -fno-tree-switch-conversion
+    - -fno-tree-loop-optimize
+
+Index:
+  Background: Build
+
+Diagnostics:
+  ClangTidy:
+    Add:
+      - readability-*
+      - modernize-*
+      - performance-*
+      - bugprone-*
+    Remove:
+      # Disable checks that are too strict for embedded development
+      - modernize-use-trailing-return-type
+      - readability-magic-numbers
+      - readability-uppercase-literal-suffix
+      - modernize-avoid-c-arrays
+
+Completion:
+  AllScopes: true
+
+InlayHints:
+  Enabled: true
+  ParameterNames: true
+  DeducedTypes: true
