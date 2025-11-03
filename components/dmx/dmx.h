@@ -25,6 +25,9 @@ class DMXComponent : public Component {
   /// Read a value from a DMX channel (1-512)
   uint8_t read_channel(uint16_t channel);
 
+  // Write the DMX data to the bus and wait for sent
+  void write_data();
+
   dmx_port_t get_port() const { return dmx_port_id_; }
 
  protected:
@@ -32,8 +35,7 @@ class DMXComponent : public Component {
   InternalGPIOPin *rx_pin_{nullptr};
   InternalGPIOPin *enable_pin_{nullptr};
   dmx_port_t dmx_port_id_{DMX_NUM_0};
-  uint8_t dmx_data_[DMX_PACKET_SIZE]{0};
-  bool initialized_{false};
+  uint8_t dmx_data_[DMX_PACKET_SIZE]{};
 };
 
 }  // namespace esphome::dmx

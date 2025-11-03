@@ -13,7 +13,7 @@ DMXOutput = dmx_ns.class_("DMXOutput", output.FloatOutput, cg.Component)
 CONFIG_SCHEMA = output.FLOAT_OUTPUT_SCHEMA.extend(
     {
         cv.Required(CONF_ID): cv.declare_id(DMXOutput),
-        cv.GenerateID(CONF_DMX_BUS_ID): cv.use_id(DMXComponent),
+        cv.Required(CONF_DMX_BUS_ID): cv.use_id(DMXComponent),
         cv.Required(CONF_CHANNEL): cv.int_range(min=1, max=512),
     }
 ).extend(cv.COMPONENT_SCHEMA)

@@ -17,10 +17,10 @@ DMXComponent = dmx_ns.class_("DMXComponent", cg.Component)
 
 DMX_COMPONENT_SCHEMA = cv.Schema(
     {
-        cv.GenerateID(): cv.declare_id(DMXComponent),
+        cv.GenerateID(CONF_ID): cv.declare_id(DMXComponent),
         cv.Required(CONF_TX_PIN): pins.gpio_output_pin_schema,
         cv.Required(CONF_RX_PIN): pins.gpio_input_pin_schema,
-        cv.Optional(CONF_ENABLE_PIN): pins.gpio_output_pin_schema,
+        cv.Required(CONF_ENABLE_PIN): pins.gpio_output_pin_schema,
         cv.Required(CONF_DMX_PORT_ID): cv.int_range(min=0, max=2),
     }
 ).extend(cv.COMPONENT_SCHEMA)
@@ -40,14 +40,13 @@ async def to_code(config):
         rx_pin = await cg.gpio_pin_expression(conf[CONF_RX_PIN])
         cg.add(var.set_rx_pin(rx_pin))
 
-        if CONF_ENABLE_PIN in conf:
-            enable_pin = await cg.gpio_pin_expression(conf[CONF_ENABLE_PIN])
-            cg.add(var.set_enable_pin(enable_pin))
+        enable_pin = await cg.gpio_pin_expression(conf[CONF_ENABLE_PIN])
+        cg.add(var.set_enable_pin(enable_pin))
 
         cg.add(var.set_dmx_port_id(conf[CONF_DMX_PORT_ID]))
 
     # Add esp_dmx library once
     cg.add_library(
         name="esp_dmx", 
-        repository="https://github.com/H3mul/esp_dmx",
+        repository="https://github.com/H3mul/esp_dmx.git#93cd565bb07d6bf9a56b5c62c96f2552a8fc6194",
         version=None)
