@@ -1,0 +1,62 @@
+esphome:
+  name: dmx-example
+
+esp32:
+  board: esp32dev
+  framework:
+    type: arduino
+
+# Enable logging
+logger:
+
+external_components:
+  - source: components
+
+# Example DMX configuration
+dmx:
+  - id: dmx_bus_a
+    enable_pin:
+      number: GPIO18
+    tx_pin:
+      number: GPIO16
+    rx_pin:
+      number: GPIO17
+    dmx_port_id: 1
+
+  - id: dmx_bus_b
+    enable_pin:
+      number: GPIO23
+    tx_pin:
+      number: GPIO21
+    rx_pin:
+      number: GPIO22
+    dmx_port_id: 2
+
+# DMX outputs
+output:
+  - platform: dmx
+    channel: 1
+    dmx_bus_id: dmx_bus_a
+    id: dmx_output_1
+
+  - platform: dmx
+    channel: 2
+    dmx_bus_id: dmx_bus_a
+    id: dmx_output_2
+
+  - platform: dmx
+    channel: 3
+    dmx_bus_id: dmx_bus_a
+    id: dmx_output_3
+
+# Example: Use DMX outputs with lights
+light:
+  - platform: monochromatic
+    name: "DMX Light 1"
+    output: dmx_output_1
+
+  - platform: rgb
+    name: "DMX RGB Light"
+    red: dmx_output_1
+    green: dmx_output_2
+    blue: dmx_output_3
