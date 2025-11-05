@@ -49,6 +49,12 @@ void DMXComponent::send_data() {
   dmx_wait_sent(this->dmx_port_id_, DMX_TIMEOUT_TICK);
 }
 
+void DMXComponent::read_universe(uint8_t *buffer, size_t buffer_size) {
+  // Copy DMX data to the provided buffer
+  size_t copy_size = std::min(buffer_size, static_cast<size_t>(DMX_PACKET_SIZE - 1));
+  memcpy(buffer, this->dmx_data_ + 1, copy_size);
+}
+
 void DMXComponent::write_universe(const uint8_t *data, size_t length) {
   // Zero byte in DMX packet is the DMX start code. Always 0x00.
   this->dmx_data_[0] = 0x00;

@@ -40,6 +40,9 @@ class DMXComponent : public Component {
   /// Read a value from a DMX channel (1-512)
   uint8_t read_channel(uint16_t channel);
 
+  /// Read the DMX universe buffer (copies data to provided buffer)
+  void read_universe(uint8_t *buffer, size_t buffer_size);
+
   /// Write a whole DMX universe (packet) to the internal buffer
   void write_universe(const uint8_t *data, size_t length);
 
