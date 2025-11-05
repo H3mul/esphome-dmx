@@ -2,10 +2,9 @@
 
 #include "esphome/core/component.h"
 #include "esphome/components/output/float_output.h"
-#include "../dmx.h"
+#include "dmx.h"
 
-namespace esphome {
-namespace dmx {
+namespace esphome::dmx {
 
 class DMXOutput : public output::FloatOutput, public Component {
  public:
@@ -22,5 +21,4 @@ class DMXOutput : public output::FloatOutput, public Component {
   uint16_t channel_{1};
 };
 
-}  // namespace dmx
-}  // namespace esphome
+}  // namespace esphome::dmx

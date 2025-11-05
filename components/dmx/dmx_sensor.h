@@ -2,7 +2,7 @@
 
 #include "esphome/core/component.h"
 #include "esphome/components/sensor/sensor.h"
-#include "../dmx.h"
+#include "dmx.h"
 
 namespace esphome::dmx {
 

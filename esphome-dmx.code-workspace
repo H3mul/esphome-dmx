@@ -47,7 +47,7 @@
     "editor.wordWrap": "wordWrapColumn",
     "editor.wordWrapColumn": 120,
     // Python settings for ESPHome YAML validation
-    "python.defaultInterpreterPath": "/usr/bin/python3",
+    "python.defaultInterpreterPath": "${workspaceFolder}/.venv/bin/python",
     "yaml.schemas": {
       "https://esphome.io/esphome.json": [
         "*.yaml",

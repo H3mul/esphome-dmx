@@ -7,7 +7,7 @@ from esphome.const import (
     STATE_CLASS_MEASUREMENT,
     UNIT_EMPTY,
 )
-from .. import dmx_ns, DMXComponent
+from . import dmx_ns, DMXComponent
 
 CONF_DMX_BUS_ID = "dmx_bus_id"
 

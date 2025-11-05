@@ -2,7 +2,7 @@ import esphome.codegen as cg
 import esphome.config_validation as cv
 from esphome.components import output
 from esphome.const import CONF_ID, CONF_CHANNEL
-from .. import dmx_ns, DMXComponent
+from . import dmx_ns, DMXComponent
 
 DEPENDENCIES = ["dmx"]
 

@@ -56,24 +56,24 @@ sensor:
 # DMX fixtures as outputs
 output:
   - platform: dmx
+    id: dmx_output_1
     dmx_bus_id: dmx_bus_a
     channel: 1
-    id: dmx_output_1
 
   - platform: dmx
+    id: dmx_output_2
     dmx_bus_id: dmx_bus_a
     channel: 2
-    id: dmx_output_2
 
   - platform: dmx
+    id: dmx_output_3
     dmx_bus_id: dmx_bus_a
     channel: 3
-    id: dmx_output_3
 
   # Internal output for synced light (synced to DMX sensor channel 1)
   - platform: ledc
-    pin: GPIO2
     id: gpio_ledc_output
+    pin: GPIO2
 
 # Example: set up dmx output fixtures as lights
 light:
