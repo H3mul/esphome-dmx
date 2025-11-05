@@ -15,6 +15,7 @@ external_components:
 # Example DMX configuration
 dmx:
   - id: dmx_bus_a
+    mode: send
     enable_pin:
       number: GPIO18
     tx_pin:
@@ -24,6 +25,7 @@ dmx:
     dmx_port_id: 1
 
   - id: dmx_bus_b
+    mode: receive
     enable_pin:
       number: GPIO23
     tx_pin:
@@ -31,6 +33,19 @@ dmx:
     rx_pin:
       number: GPIO22
     dmx_port_id: 2
+
+sensor:
+  - platform: dmx
+    dmx_bus_id: dmx_bus_b
+    channel: 1
+    id: dmx_sensor_1
+    name: "DMX Channel 1 Value"
+
+  - platform: dmx
+    dmx_bus_id: dmx_bus_b
+    channel: 2
+    id: dmx_sensor_2
+    name: "DMX Channel 2 Value"
 
 # DMX outputs
 output:

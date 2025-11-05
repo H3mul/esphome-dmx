@@ -7,6 +7,11 @@
 
 namespace esphome::dmx {
 
+enum DMXMode {
+  DMX_MODE_SEND,
+  DMX_MODE_RECEIVE,
+};
+
 class DMXComponent : public Component {
  public:
   void setup() override;
@@ -18,6 +23,10 @@ class DMXComponent : public Component {
   void set_rx_pin(InternalGPIOPin *pin) { rx_pin_ = pin; }
   void set_enable_pin(InternalGPIOPin *pin) { enable_pin_ = pin; }
   void set_dmx_port_id(int port_id) { dmx_port_id_ = port_id; }
+  void set_mode(DMXMode mode) { mode_ = mode; }
+  void set_read_interval(uint32_t interval_ms) { read_interval_ms_ = interval_ms; }
+
+  DMXMode get_mode() const { return mode_; }
 
   /// Write a value to a DMX channel (1-512)
   void write_channel(uint16_t channel, uint8_t value);
@@ -27,6 +36,9 @@ class DMXComponent : public Component {
 
   // Write the DMX data to the bus and wait for sent
   void send_data();
+
+  /// Read a value from a DMX channel (1-512)
+  uint8_t read_channel(uint16_t channel);
 
   /// Write a whole DMX universe (packet) to the internal buffer
   void write_universe(const uint8_t *data, size_t length);
@@ -42,6 +54,9 @@ class DMXComponent : public Component {
   InternalGPIOPin *enable_pin_{nullptr};
   dmx_port_t dmx_port_id_{DMX_NUM_0};
   uint8_t dmx_data_[DMX_PACKET_SIZE]{};
+  DMXMode mode_{DMX_MODE_SEND};
+  uint32_t read_interval_ms_{100};
+  uint32_t last_read_time_{0};
 };
 
 }  // namespace esphome::dmx

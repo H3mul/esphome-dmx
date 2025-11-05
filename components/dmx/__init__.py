@@ -1,19 +1,26 @@
 import esphome.codegen as cg
 import esphome.config_validation as cv
 from esphome import pins
-from esphome.const import CONF_ID
+from esphome.const import CONF_ID, CONF_MODE
 from esphome.core import CORE
 
 DEPENDENCIES = ["esp32"]
-AUTO_LOAD = ["output"]
+AUTO_LOAD = ["output", "sensor"]
 
 CONF_ENABLE_PIN = "enable_pin"
 CONF_TX_PIN = "tx_pin"
 CONF_RX_PIN = "rx_pin"
 CONF_DMX_PORT_ID = "dmx_port_id"
+CONF_READ_INTERVAL = "read_interval"
 
 dmx_ns = cg.esphome_ns.namespace("dmx")
 DMXComponent = dmx_ns.class_("DMXComponent", cg.Component)
+DMXMode = dmx_ns.enum("DMXMode")
+
+DMX_MODES = {
+    "send": DMXMode.DMX_MODE_SEND,
+    "receive": DMXMode.DMX_MODE_RECEIVE,
+}
 
 DMX_COMPONENT_SCHEMA = cv.Schema(
     {
@@ -22,6 +29,8 @@ DMX_COMPONENT_SCHEMA = cv.Schema(
         cv.Required(CONF_RX_PIN): pins.gpio_input_pin_schema,
         cv.Required(CONF_ENABLE_PIN): pins.gpio_output_pin_schema,
         cv.Required(CONF_DMX_PORT_ID): cv.int_range(min=0, max=2),
+        cv.Optional(CONF_MODE, default="send"): cv.enum(DMX_MODES, lower=True),
+        cv.Optional(CONF_READ_INTERVAL, default="100ms"): cv.positive_time_period_milliseconds,
     }
 ).extend(cv.COMPONENT_SCHEMA)
 
@@ -44,6 +53,8 @@ async def to_code(config):
         cg.add(var.set_enable_pin(enable_pin))
 
         cg.add(var.set_dmx_port_id(conf[CONF_DMX_PORT_ID]))
+        cg.add(var.set_mode(conf[CONF_MODE]))
+        cg.add(var.set_read_interval(conf[CONF_READ_INTERVAL]))
 
     # Add esp_dmx library once
     cg.add_library(
