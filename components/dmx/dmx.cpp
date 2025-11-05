@@ -1,8 +1,8 @@
 #include "dmx.h"
 #include "dmx/include/types.h"
 #include "esphome/core/log.h"
-#include <string.h>
 #include <algorithm>
+#include <string.h>
 
 namespace esphome::dmx {
 
@@ -15,12 +15,11 @@ void DMXComponent::setup() {
   dmx_config_t config = DMX_CONFIG_DEFAULT;
   dmx_personality_t personalities[] = {};
   int personality_count = 0;
-  dmx_driver_install(this->dmx_port_id_, &config, personalities, personality_count);
+  dmx_driver_install(this->dmx_port_id_, &config, personalities,
+                     personality_count);
 
-  dmx_set_pin(this->dmx_port_id_,
-    this->tx_pin_->get_pin(),
-    this->rx_pin_->get_pin(),
-    this->enable_pin_->get_pin());
+  dmx_set_pin(this->dmx_port_id_, this->tx_pin_->get_pin(),
+              this->rx_pin_->get_pin(), this->enable_pin_->get_pin());
 
   memset(this->dmx_data_, 0, DMX_PACKET_SIZE);
 
@@ -32,7 +31,7 @@ void DMXComponent::loop() {
     uint32_t now = millis();
     if (now - this->last_read_time_ >= this->read_interval_ms_) {
       this->last_read_time_ = now;
-      
+
       // Read DMX data from the bus into our buffer
       dmx_packet_t packet;
       if (dmx_receive(this->dmx_port_id_, &packet, DMX_TIMEOUT_TICK) > 0) {
@@ -51,13 +50,17 @@ void DMXComponent::send_data() {
 
 void DMXComponent::read_universe(uint8_t *buffer, size_t buffer_size) {
   // Copy DMX data to the provided buffer
-  size_t copy_size = std::min(buffer_size, static_cast<size_t>(DMX_PACKET_SIZE - 1));
+  size_t copy_size =
+      std::min(buffer_size, static_cast<size_t>(DMX_PACKET_SIZE - 1));
   memcpy(buffer, this->dmx_data_ + 1, copy_size);
 }
 
 void DMXComponent::write_universe(const uint8_t *data, size_t length) {
+  // Clear buffer
+  memset(this->dmx_data_ + 1, 0, DMX_PACKET_SIZE - 1);
   // Zero byte in DMX packet is the DMX start code. Always 0x00.
   this->dmx_data_[0] = 0x00;
+
   length = std::min(length, static_cast<size_t>(DMX_PACKET_SIZE - 1));
   memcpy(this->dmx_data_ + 1, data, length);
 }
@@ -70,7 +73,8 @@ void DMXComponent::send_universe(const uint8_t *data, size_t length) {
 void DMXComponent::dump_config() {
   ESP_LOGCONFIG(TAG, "DMX:");
   ESP_LOGCONFIG(TAG, "  Port: %d", this->dmx_port_id_);
-  ESP_LOGCONFIG(TAG, "  Mode: %s", this->mode_ == DMX_MODE_SEND ? "SEND" : "RECEIVE");
+  ESP_LOGCONFIG(TAG, "  Mode: %s",
+                this->mode_ == DMX_MODE_SEND ? "SEND" : "RECEIVE");
   if (this->mode_ == DMX_MODE_RECEIVE) {
     ESP_LOGCONFIG(TAG, "  Read Interval: %d ms", this->read_interval_ms_);
   }
@@ -104,4 +108,4 @@ uint8_t DMXComponent::read_channel(uint16_t channel) {
   return this->dmx_data_[channel];
 }
 
-}  // namespace esphome::dmx
+} // namespace esphome::dmx
