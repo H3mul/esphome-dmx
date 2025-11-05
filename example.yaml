@@ -12,7 +12,7 @@ logger:
 external_components:
   - source: components
 
-# Example DMX configuration
+# DMX bus setup
 dmx:
   - id: dmx_bus_a
     mode: send
@@ -34,12 +34,18 @@ dmx:
       number: GPIO22
     dmx_port_id: 2
 
+# DMX bus channels as sensors
 sensor:
   - platform: dmx
     dmx_bus_id: dmx_bus_b
-    channel: 1
+    channel: 3 
     id: dmx_sensor_1
     name: "DMX Channel 1 Value"
+    on_value:
+      then:
+        - light.turn_on:
+            id: gpio_light
+            brightness: !lambda 'return x / 255.0;'
 
   - platform: dmx
     dmx_bus_id: dmx_bus_b
@@ -47,7 +53,7 @@ sensor:
     id: dmx_sensor_2
     name: "DMX Channel 2 Value"
 
-# DMX outputs
+# DMX fixtures as outputs
 output:
   - platform: dmx
     dmx_bus_id: dmx_bus_a
@@ -64,7 +70,12 @@ output:
     channel: 3
     id: dmx_output_3
 
-# Example: Use DMX outputs with lights
+  # Internal output for synced light (synced to DMX sensor channel 1)
+  - platform: ledc
+    pin: GPIO2
+    id: gpio_ledc_output
+
+# Example: set up dmx output fixtures as lights
 light:
   - platform: monochromatic
     name: "DMX Light 1"
@@ -76,6 +87,11 @@ light:
     green: dmx_output_2
     blue: dmx_output_3
 
+  - platform: monochromatic
+    name: "Light driven by DMX channel"
+    id: gpio_light
+    output: gpio_ledc_output
+
 # Example switch with lambda operating on DMX component
 switch:
   - platform: template
@@ -85,10 +101,10 @@ switch:
         // Fetch the DMX component by ID
         auto dmx_bus = id(dmx_bus_a);
         // Write full brightness (255) to channel 1
-        dmx_bus->write_channel(1, 255);
+        dmx_bus->send_channel(1, 255);
     turn_off_action:
       lambda: |-
         // Fetch the DMX component by ID
         auto dmx_bus = id(dmx_bus_a);
         // Write 0 to channel 1
-        dmx_bus->write_channel(1, 0);
+        dmx_bus->send_channel(1, 0);
