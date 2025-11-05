@@ -2,6 +2,7 @@
 #include "dmx/include/types.h"
 #include "esphome/core/log.h"
 #include <string.h>
+#include <algorithm>
 
 namespace esphome::dmx {
 
@@ -12,7 +13,9 @@ void DMXComponent::setup() {
 
   // Configure DMX driver
   dmx_config_t config = DMX_CONFIG_DEFAULT;
-  dmx_driver_install(this->dmx_port_id_, &config, NULL, 0);
+  dmx_personality_t personalities[] = {};
+  int personality_count = 0;
+  dmx_driver_install(this->dmx_port_id_, &config, personalities, personality_count);
 
   dmx_set_pin(this->dmx_port_id_,
     this->tx_pin_->get_pin(),
@@ -26,10 +29,21 @@ void DMXComponent::setup() {
 
 void DMXComponent::loop() { }
 
-void DMXComponent::write_data() {
+void DMXComponent::send_data() {
   dmx_write(this->dmx_port_id_, this->dmx_data_, DMX_PACKET_SIZE);
   dmx_send(this->dmx_port_id_);
   dmx_wait_sent(this->dmx_port_id_, DMX_TIMEOUT_TICK);
+}
+
+void DMXComponent::write_universe(const uint8_t *data, size_t length) {
+  // Zeroth byte in DMX packet is the DMX start code. Always 0x00.
+  length = std::min(length, static_cast<size_t>(DMX_PACKET_SIZE - 1));
+  memcpy(this->dmx_data_ + 1, data, length);
+}
+
+void DMXComponent::send_universe(const uint8_t *data, size_t length) {
+  write_universe(data, length);
+  send_data();
 }
 
 void DMXComponent::dump_config() {
@@ -42,24 +56,18 @@ void DMXComponent::dump_config() {
   }
 }
 
+void DMXComponent::send_channel(uint16_t channel, uint8_t value) {
+  this->write_channel(channel, value);
+  this->send_data();
+}
+
 void DMXComponent::write_channel(uint16_t channel, uint8_t value) {
   if (channel < 1 || channel > DMX_PACKET_SIZE) {
     ESP_LOGW(TAG, "Invalid DMX channel: %d (must be 1-512)", channel);
     return;
   }
-  // DMX channels are 1-indexed, but array is 0-indexed
-  this->dmx_data_[channel - 1] = value;
-
-  this->write_data();
-}
-
-uint8_t DMXComponent::read_channel(uint16_t channel) {
-  if (channel < 1 || channel > DMX_PACKET_SIZE) {
-    ESP_LOGW(TAG, "Invalid DMX channel: %d (must be 1-512)", channel);
-    return 0;
-  }
-  // DMX channels are 1-indexed, but array is 0-indexed
-  return this->dmx_data_[channel - 1];
+  // Zeroth byte in DMX packet is the DMX start code. Don't offset by -1.
+  this->dmx_data_[channel] = value;
 }
 
 }  // namespace esphome::dmx

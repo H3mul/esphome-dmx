@@ -60,3 +60,20 @@ light:
     red: dmx_output_1
     green: dmx_output_2
     blue: dmx_output_3
+
+# Example switch with lambda operating on DMX component
+switch:
+  - platform: template
+    name: "DMX Channel 1 Full Brightness"
+    turn_on_action:
+      lambda: |-
+        // Fetch the DMX component by ID
+        auto dmx_bus = id(dmx_bus_a);
+        // Write full brightness (255) to channel 1
+        dmx_bus->write_channel(1, 255);
+    turn_off_action:
+      lambda: |-
+        // Fetch the DMX component by ID
+        auto dmx_bus = id(dmx_bus_a);
+        // Write 0 to channel 1
+        dmx_bus->write_channel(1, 0);

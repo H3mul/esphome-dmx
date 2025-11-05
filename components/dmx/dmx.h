@@ -22,11 +22,17 @@ class DMXComponent : public Component {
   /// Write a value to a DMX channel (1-512)
   void write_channel(uint16_t channel, uint8_t value);
 
-  /// Read a value from a DMX channel (1-512)
-  uint8_t read_channel(uint16_t channel);
+  /// Write and send a value to a DMX channel (1-512)
+  void send_channel(uint16_t channel, uint8_t value);
 
   // Write the DMX data to the bus and wait for sent
-  void write_data();
+  void send_data();
+
+  /// Write a whole DMX universe (packet) to the internal buffer
+  void write_universe(const uint8_t *data, size_t length);
+
+  /// Write and send a whole DMX universe (packet)
+  void send_universe(const uint8_t *data, size_t length);
 
   dmx_port_t get_port() const { return dmx_port_id_; }
 

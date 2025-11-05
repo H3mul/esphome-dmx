@@ -21,7 +21,7 @@ void DMXOutput::write_state(float state) {
   uint8_t value = static_cast<uint8_t>(state * 255.0f);
   
   if (this->parent_ != nullptr) {
-    this->parent_->write_channel(this->channel_, value);
+    this->parent_->send_channel(this->channel_, value);
   } else {
     ESP_LOGW(TAG, "DMX parent not set!");
   }
