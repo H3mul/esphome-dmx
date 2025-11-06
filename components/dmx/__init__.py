@@ -12,6 +12,7 @@ CONF_TX_PIN = "tx_pin"
 CONF_RX_PIN = "rx_pin"
 CONF_DMX_PORT_ID = "dmx_port_id"
 CONF_READ_INTERVAL = "read_interval"
+CONF_NAME = "name"
 
 dmx_ns = cg.esphome_ns.namespace("dmx")
 DMXComponent = dmx_ns.class_("DMXComponent", cg.Component)
@@ -25,6 +26,7 @@ DMX_MODES = {
 DMX_COMPONENT_SCHEMA = cv.Schema(
     {
         cv.GenerateID(CONF_ID): cv.declare_id(DMXComponent),
+        cv.Optional(CONF_NAME): cv.string,
         cv.Required(CONF_TX_PIN): pins.gpio_output_pin_schema,
         cv.Required(CONF_RX_PIN): pins.gpio_input_pin_schema,
         cv.Required(CONF_ENABLE_PIN): pins.gpio_output_pin_schema,
@@ -42,6 +44,9 @@ async def to_code(config):
     for conf in config:
         var = cg.new_Pvariable(conf[CONF_ID])
         await cg.register_component(var, conf)
+
+        if CONF_NAME in conf:
+            cg.add(var.set_name(conf[CONF_NAME]))
 
         tx_pin = await cg.gpio_pin_expression(conf[CONF_TX_PIN])
         cg.add(var.set_tx_pin(tx_pin))

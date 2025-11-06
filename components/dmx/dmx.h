@@ -4,6 +4,7 @@
 #include "esphome/core/gpio.h"
 #include "esphome/core/hal.h"
 #include <esp_dmx.h>
+#include <string>
 
 namespace esphome::dmx {
 
@@ -13,18 +14,21 @@ enum DMXMode {
 };
 
 class DMXComponent : public Component {
- public:
+public:
   void setup() override;
   void loop() override;
   void dump_config() override;
   float get_setup_priority() const override { return setup_priority::BUS; }
 
+  void set_name(const std::string &name) { name_ = name; }
   void set_tx_pin(InternalGPIOPin *pin) { tx_pin_ = pin; }
   void set_rx_pin(InternalGPIOPin *pin) { rx_pin_ = pin; }
   void set_enable_pin(InternalGPIOPin *pin) { enable_pin_ = pin; }
   void set_dmx_port_id(int port_id) { dmx_port_id_ = port_id; }
   void set_mode(DMXMode mode) { mode_ = mode; }
-  void set_read_interval(uint32_t interval_ms) { read_interval_ms_ = interval_ms; }
+  void set_read_interval(uint32_t interval_ms) {
+    read_interval_ms_ = interval_ms;
+  }
 
   DMXMode get_mode() const { return mode_; }
 
@@ -51,7 +55,8 @@ class DMXComponent : public Component {
 
   dmx_port_t get_port() const { return dmx_port_id_; }
 
- protected:
+protected:
+  std::string name_{};
   InternalGPIOPin *tx_pin_{nullptr};
   InternalGPIOPin *rx_pin_{nullptr};
   InternalGPIOPin *enable_pin_{nullptr};
@@ -62,4 +67,4 @@ class DMXComponent : public Component {
   uint32_t last_read_time_{0};
 };
 
-}  // namespace esphome::dmx
+} // namespace esphome::dmx

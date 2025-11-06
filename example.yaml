@@ -15,6 +15,7 @@ external_components:
 # DMX bus setup
 dmx:
   - id: dmx_bus_a
+    name: "DMX Port 1"
     mode: send
     enable_pin:
       number: GPIO18
@@ -25,6 +26,7 @@ dmx:
     dmx_port_id: 1
 
   - id: dmx_bus_b
+    name: "DMX Port 2"
     mode: receive
     enable_pin:
       number: GPIO23
@@ -38,14 +40,14 @@ dmx:
 sensor:
   - platform: dmx
     dmx_bus_id: dmx_bus_b
-    channel: 3 
+    channel: 3
     id: dmx_sensor_1
     name: "DMX Channel 1 Value"
     on_value:
       then:
         - light.turn_on:
             id: gpio_light
-            brightness: !lambda 'return x / 255.0;'
+            brightness: !lambda "return x / 255.0;"
 
   - platform: dmx
     dmx_bus_id: dmx_bus_b
