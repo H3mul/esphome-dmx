@@ -7,7 +7,7 @@ from esphome.const import (
     STATE_CLASS_MEASUREMENT,
     UNIT_EMPTY,
 )
-from . import dmx_ns, DMXComponent
+from . import dmx_ns, DMXComponent, DMXMode
 
 CONF_DMX_BUS_ID = "dmx_bus_id"
 
@@ -24,7 +24,6 @@ CONFIG_SCHEMA = sensor.sensor_schema(
         cv.Required(CONF_CHANNEL): cv.int_range(min=1, max=512),
     }
 )
-
 
 async def to_code(config):
     var = await sensor.new_sensor(config)
