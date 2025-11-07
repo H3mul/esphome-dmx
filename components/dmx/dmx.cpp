@@ -27,6 +27,10 @@ void DMXComponent::setup() {
 }
 
 void DMXComponent::loop() {
+  if (!this->enabled_) {
+    return;
+  }
+
   if (this->mode_ != DMX_MODE_RECEIVE) {
     ESP_LOGV(TAG, "DMX port not in receive mode, skipping receive loop");
     return;
@@ -51,6 +55,10 @@ void DMXComponent::loop() {
 }
 
 void DMXComponent::send_data() {
+  if (!this->enabled_) {
+    return;
+  }
+
   if (this->mode_ != DMX_MODE_SEND) {
     ESP_LOGV(TAG, "DMX port not in send mode, ignoring send request");
     return;

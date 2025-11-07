@@ -1,7 +1,7 @@
 import esphome.codegen as cg
 import esphome.config_validation as cv
 from esphome import pins
-from esphome.const import CONF_ID, CONF_MODE
+from esphome.const import CONF_ID, CONF_MODE, CONF_ENABLED
 from esphome.core import CORE
 
 DEPENDENCIES = ["esp32"]
@@ -29,6 +29,7 @@ DMX_COMPONENT_SCHEMA = cv.Schema(
     {
         cv.GenerateID(CONF_ID): cv.declare_id(DMXComponent),
         cv.Optional(CONF_NAME): cv.string,
+        cv.Optional(CONF_ENABLED, default=True): cv.boolean,
         cv.Required(CONF_TX_PIN): pins.gpio_output_pin_schema,
         cv.Required(CONF_RX_PIN): pins.gpio_input_pin_schema,
         cv.Required(CONF_ENABLE_PIN): pins.gpio_output_pin_schema,
@@ -66,6 +67,7 @@ async def to_code(config):
         cg.add(var.set_read_interval(conf[CONF_READ_INTERVAL]))
         cg.add(var.set_send_timeout_ticks(conf[CONF_SEND_TIMEOUT_TICKS]))
         cg.add(var.set_receive_timeout_ticks(conf[CONF_RECEIVE_TIMEOUT_TICKS]))
+        cg.add(var.set_enabled(conf[CONF_ENABLED]))
 
     # Add esp_dmx library once
     cg.add_library(

@@ -17,6 +17,7 @@ dmx:
   - id: dmx_bus_a
     name: "DMX Port 1"
     mode: send
+    enabled: true
     send_timeout_ticks: 100
     receive_timeout_ticks: 100
     enable_pin:

@@ -34,6 +34,7 @@ public:
   void set_receive_timeout_ticks(uint16_t ticks) {
     receive_timeout_ticks_ = ticks;
   }
+  void set_enabled(bool enabled) { enabled_ = enabled; }
 
   DMXMode get_mode() const { return mode_; }
 
@@ -72,6 +73,7 @@ protected:
   uint32_t last_read_time_{0};
   uint16_t send_timeout_ticks_{100};
   uint16_t receive_timeout_ticks_{100};
+  bool enabled_{true};
 };
 
 } // namespace esphome::dmx
