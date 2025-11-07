@@ -20,6 +20,7 @@ public:
   void dump_config() override;
   float get_setup_priority() const override { return setup_priority::BUS; }
 
+  std::string get_name() const { return name_; }
   void set_name(const std::string &name) { name_ = name; }
   void set_tx_pin(InternalGPIOPin *pin) { tx_pin_ = pin; }
   void set_rx_pin(InternalGPIOPin *pin) { rx_pin_ = pin; }
