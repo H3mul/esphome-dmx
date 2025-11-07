@@ -34,8 +34,8 @@ void DMXComponent::loop() {
 
       // Read DMX data from the bus into our buffer
       dmx_packet_t packet;
-      size_t bytes_received =
-          dmx_receive(this->dmx_port_id_, &packet, DMX_TIMEOUT_TICK);
+      size_t bytes_received = dmx_receive(this->dmx_port_id_, &packet,
+                                          this->receive_timeout_ticks_);
       if (bytes_received > 0) {
         // Copy received data to our buffer
         dmx_read(this->dmx_port_id_, this->dmx_data_, DMX_PACKET_SIZE);
@@ -51,7 +51,7 @@ void DMXComponent::send_data() {
   ESP_LOGV(TAG, "DMX: Sending data (512 bytes)");
   dmx_write(this->dmx_port_id_, this->dmx_data_, DMX_PACKET_SIZE);
   dmx_send(this->dmx_port_id_);
-  dmx_wait_sent(this->dmx_port_id_, DMX_TIMEOUT_TICK);
+  dmx_wait_sent(this->dmx_port_id_, this->send_timeout_ticks_);
   ESP_LOGVV(TAG, "DMX: Data sent successfully");
 }
 

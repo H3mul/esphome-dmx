@@ -12,6 +12,8 @@ CONF_TX_PIN = "tx_pin"
 CONF_RX_PIN = "rx_pin"
 CONF_DMX_PORT_ID = "dmx_port_id"
 CONF_READ_INTERVAL = "read_interval"
+CONF_SEND_TIMEOUT_TICKS = "send_timeout_ticks"
+CONF_RECEIVE_TIMEOUT_TICKS = "receive_timeout_ticks"
 CONF_NAME = "name"
 
 dmx_ns = cg.esphome_ns.namespace("dmx")
@@ -33,6 +35,8 @@ DMX_COMPONENT_SCHEMA = cv.Schema(
         cv.Required(CONF_DMX_PORT_ID): cv.int_range(min=0, max=2),
         cv.Optional(CONF_MODE, default="send"): cv.enum(DMX_MODES, lower=True),
         cv.Optional(CONF_READ_INTERVAL, default="100ms"): cv.positive_time_period_milliseconds,
+        cv.Optional(CONF_SEND_TIMEOUT_TICKS, default=100): cv.int_range(min=0, max=1250),
+        cv.Optional(CONF_RECEIVE_TIMEOUT_TICKS, default=100): cv.int_range(min=0, max=1250),
     }
 ).extend(cv.COMPONENT_SCHEMA)
 
@@ -60,6 +64,8 @@ async def to_code(config):
         cg.add(var.set_dmx_port_id(conf[CONF_DMX_PORT_ID]))
         cg.add(var.set_mode(conf[CONF_MODE]))
         cg.add(var.set_read_interval(conf[CONF_READ_INTERVAL]))
+        cg.add(var.set_send_timeout_ticks(conf[CONF_SEND_TIMEOUT_TICKS]))
+        cg.add(var.set_receive_timeout_ticks(conf[CONF_RECEIVE_TIMEOUT_TICKS]))
 
     # Add esp_dmx library once
     cg.add_library(

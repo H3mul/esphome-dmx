@@ -30,6 +30,10 @@ public:
   void set_read_interval(uint32_t interval_ms) {
     read_interval_ms_ = interval_ms;
   }
+  void set_send_timeout_ticks(uint16_t ticks) { send_timeout_ticks_ = ticks; }
+  void set_receive_timeout_ticks(uint16_t ticks) {
+    receive_timeout_ticks_ = ticks;
+  }
 
   DMXMode get_mode() const { return mode_; }
 
@@ -66,6 +70,8 @@ protected:
   DMXMode mode_{DMX_MODE_SEND};
   uint32_t read_interval_ms_{100};
   uint32_t last_read_time_{0};
+  uint16_t send_timeout_ticks_{100};
+  uint16_t receive_timeout_ticks_{100};
 };
 
 } // namespace esphome::dmx
