@@ -64,5 +64,5 @@ async def to_code(config):
     # Add esp_dmx library once
     cg.add_library(
         name="esp_dmx", 
-        repository="https://github.com/H3mul/esp_dmx.git#93cd565bb07d6bf9a56b5c62c96f2552a8fc6194",
+        repository="https://github.com/H3mul/esp_dmx.git#cf22ce59b77642d29c91a06574be9ca0959ba9bc",
         version=None)
