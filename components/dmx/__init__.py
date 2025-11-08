@@ -1,12 +1,13 @@
 import esphome.codegen as cg
 import esphome.config_validation as cv
 from esphome import pins
-from esphome.const import CONF_ID, CONF_MODE, CONF_ENABLED
+from esphome.const import CONF_ID, CONF_MODE
 from esphome.core import CORE
 
 DEPENDENCIES = ["esp32"]
 AUTO_LOAD = ["output", "sensor"]
 
+CONF_ENABLED = "enabled"
 CONF_ENABLE_PIN = "enable_pin"
 CONF_TX_PIN = "tx_pin"
 CONF_RX_PIN = "rx_pin"
