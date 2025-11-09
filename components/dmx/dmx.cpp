@@ -32,7 +32,7 @@ void DMXComponent::loop() {
   }
 
   if (this->mode_ != DMX_MODE_RECEIVE) {
-    ESP_LOGV(TAG, "DMX port not in receive mode, skipping receive loop");
+    ESP_LOGVV(TAG, "DMX port not in receive mode, skipping receive loop");
     return;
   }
 
@@ -63,11 +63,11 @@ void DMXComponent::send_data() {
     ESP_LOGV(TAG, "DMX port not in send mode, ignoring send request");
     return;
   }
-  ESP_LOGV(TAG, "DMX: Sending data (512 bytes)");
+  ESP_LOGV(TAG, "DMX '%s': Sending data (512 bytes)", this->name_.c_str());
   dmx_write(this->dmx_port_id_, this->dmx_data_, DMX_PACKET_SIZE);
   dmx_send(this->dmx_port_id_);
   dmx_wait_sent(this->dmx_port_id_, this->send_timeout_ticks_);
-  ESP_LOGVV(TAG, "DMX: Data sent successfully");
+  ESP_LOGV(TAG, "DMX '%s': Data sent successfully", this->name_.c_str());
 }
 
 void DMXComponent::read_universe(uint8_t *buffer, size_t buffer_size) {
@@ -75,12 +75,14 @@ void DMXComponent::read_universe(uint8_t *buffer, size_t buffer_size) {
   size_t copy_size =
       std::min(buffer_size, static_cast<size_t>(DMX_PACKET_SIZE - 1));
   memcpy(buffer, this->dmx_data_ + 1, copy_size);
-  ESP_LOGVV(TAG, "DMX: Universe read (%zu bytes copied)", copy_size);
+  ESP_LOGVV(TAG, "DMX '%s': Universe read (%zu bytes copied)",
+            this->name_.c_str(), copy_size);
 }
 
 void DMXComponent::write_universe(const uint8_t *data, size_t length) {
   if (this->mode_ != DMX_MODE_SEND) {
-    ESP_LOGV(TAG, "DMX port not in send mode, ignoring write request");
+    ESP_LOGV(TAG, "DMX '%s': port not in send mode, ignoring write request",
+             this->name_.c_str());
     return;
   }
   // Clear buffer
@@ -90,11 +92,13 @@ void DMXComponent::write_universe(const uint8_t *data, size_t length) {
 
   length = std::min(length, static_cast<size_t>(DMX_PACKET_SIZE - 1));
   memcpy(this->dmx_data_ + 1, data, length);
-  ESP_LOGVV(TAG, "DMX: Universe written with %zu channels", length);
+  ESP_LOGVV(TAG, "DMX '%s': Universe written with %zu channels",
+            this->name_.c_str(), length);
 }
 
 void DMXComponent::send_universe(const uint8_t *data, size_t length) {
-  ESP_LOGVV(TAG, "DMX: Sending universe with %zu channels", length);
+  ESP_LOGVV(TAG, "DMX '%s': Sending universe with %zu channels",
+            this->name_.c_str(), length);
   write_universe(data, length);
   send_data();
 }
@@ -118,14 +122,16 @@ void DMXComponent::dump_config() {
 }
 
 void DMXComponent::send_channel(uint16_t channel, uint8_t value) {
-  ESP_LOGVV(TAG, "DMX: Sending channel %d with value %d", channel, value);
+  ESP_LOGVV(TAG, "DMX '%s': Sending channel %d with value %d",
+            this->name_.c_str(), channel, value);
   this->write_channel(channel, value);
   this->send_data();
 }
 
 void DMXComponent::write_channel(uint16_t channel, uint8_t value) {
   if (this->mode_ != DMX_MODE_SEND) {
-    ESP_LOGV(TAG, "DMX port not in send mode, ignoring write request");
+    ESP_LOGVV(TAG, "DMX '%s': port not in send mode, ignoring write request",
+              this->name_.c_str());
     return;
   }
 
@@ -135,7 +141,8 @@ void DMXComponent::write_channel(uint16_t channel, uint8_t value) {
   }
   // Zero slot in DMX packet is the DMX start code. Don't offset by -1.
   this->dmx_data_[channel] = value;
-  ESP_LOGVV(TAG, "DMX: Channel %d set to %d", channel, value);
+  ESP_LOGVV(TAG, "DMX '%s': Channel %d set to %d", this->name_.c_str(), channel,
+            value);
 }
 
 uint8_t DMXComponent::read_channel(uint16_t channel) {
@@ -145,7 +152,8 @@ uint8_t DMXComponent::read_channel(uint16_t channel) {
   }
   // Zero slot in DMX packet is the DMX start code. Don't offset by -1.
   uint8_t value = this->dmx_data_[channel];
-  ESP_LOGVV(TAG, "DMX: Channel %d read as %d", channel, value);
+  ESP_LOGVV(TAG, "DMX '%s': Channel %d read as %d", this->name_.c_str(),
+            channel, value);
   return value;
 }
 
