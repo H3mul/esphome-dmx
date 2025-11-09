@@ -13,10 +13,10 @@ CONF_TX_PIN = "tx_pin"
 CONF_RX_PIN = "rx_pin"
 CONF_DMX_PORT_ID = "dmx_port_id"
 CONF_READ_INTERVAL = "read_interval"
+CONF_WRITE_INTERVAL = "write_interval"
 CONF_SEND_TIMEOUT_TICKS = "send_timeout_ticks"
 CONF_RECEIVE_TIMEOUT_TICKS = "receive_timeout_ticks"
 CONF_NAME = "name"
-CONF_WAIT_FOR_SEND = "wait_for_send"
 
 dmx_ns = cg.esphome_ns.namespace("dmx")
 DMXComponent = dmx_ns.class_("DMXComponent", cg.Component)
@@ -38,9 +38,9 @@ DMX_COMPONENT_SCHEMA = cv.Schema(
         cv.Required(CONF_DMX_PORT_ID): cv.int_range(min=0, max=2),
         cv.Optional(CONF_MODE, default="send"): cv.enum(DMX_MODES, lower=True),
         cv.Optional(CONF_READ_INTERVAL, default="100ms"): cv.positive_time_period_milliseconds,
+        cv.Optional(CONF_WRITE_INTERVAL, default="25ms"): cv.positive_time_period_milliseconds,
         cv.Optional(CONF_SEND_TIMEOUT_TICKS, default=100): cv.int_range(min=0, max=1250),
         cv.Optional(CONF_RECEIVE_TIMEOUT_TICKS, default=100): cv.int_range(min=0, max=1250),
-        cv.Optional(CONF_WAIT_FOR_SEND, default=False): cv.boolean,
     }
 ).extend(cv.COMPONENT_SCHEMA)
 
@@ -68,13 +68,13 @@ async def to_code(config):
         cg.add(var.set_dmx_port_id(conf[CONF_DMX_PORT_ID]))
         cg.add(var.set_mode(conf[CONF_MODE]))
         cg.add(var.set_read_interval(conf[CONF_READ_INTERVAL]))
+        cg.add(var.set_write_interval(conf[CONF_WRITE_INTERVAL]))
         cg.add(var.set_send_timeout_ticks(conf[CONF_SEND_TIMEOUT_TICKS]))
         cg.add(var.set_receive_timeout_ticks(conf[CONF_RECEIVE_TIMEOUT_TICKS]))
         cg.add(var.set_enabled(conf[CONF_ENABLED]))
-        cg.add(var.set_wait_for_send(conf[CONF_WAIT_FOR_SEND]))
 
     # Add esp_dmx library once
     cg.add_library(
         name="esp_dmx", 
-        repository="https://github.com/H3mul/esp_dmx.git#cf22ce59b77642d29c91a06574be9ca0959ba9bc",
+        repository="https://github.com/H3mul/esp_dmx.git#d415508459953083e464a4c3c693dba92425be83",
         version=None)

@@ -1,4 +1,5 @@
 #include "dmx.h"
+#include "dmx/include/service.h"
 #include "dmx/include/types.h"
 #include "esphome/core/log.h"
 #include <algorithm>
@@ -31,72 +32,46 @@ void DMXComponent::loop() {
     return;
   }
 
-  if (this->mode_ != DMX_MODE_RECEIVE) {
-    ESP_LOGVV(TAG, "DMX port not in receive mode, skipping receive loop");
-    return;
-  }
-
   uint32_t now = millis();
-  if (now - this->last_read_time_ >= this->read_interval_ms_) {
-    this->last_read_time_ = now;
 
-    // Read DMX data from the bus into our buffer
-    dmx_packet_t packet;
-    size_t bytes_received =
-        dmx_receive(this->dmx_port_id_, &packet, this->receive_timeout_ticks_);
-    if (bytes_received > 0) {
-      // Copy received data to our buffer
-      dmx_read(this->dmx_port_id_, this->dmx_data_, DMX_PACKET_SIZE);
-      ESP_LOGV(TAG, "DMX Received: %zu bytes", bytes_received);
-    } else {
-      ESP_LOGV(TAG, "DMX Receive timeout");
+  if (this->mode_ == DMX_MODE_RECEIVE) {
+    if (now - this->last_read_time_ >= this->read_interval_ms_) {
+      this->last_read_time_ = now;
+
+      // Read DMX data from the bus into our buffer
+      dmx_packet_t packet;
+      size_t bytes_received = dmx_receive(this->dmx_port_id_, &packet,
+                                          this->receive_timeout_ticks_);
+      if (bytes_received > 0) {
+        // Copy received data to our buffer
+        dmx_read(this->dmx_port_id_, this->dmx_data_, DMX_PACKET_SIZE);
+        ESP_LOGV(TAG, "DMX Received: %zu bytes", bytes_received);
+      } else {
+        ESP_LOGV(TAG, "DMX Receive timeout");
+      }
+    }
+  } else if (this->mode_ == DMX_MODE_SEND) {
+    if (now - this->last_send_time_ >= this->write_interval_ms_) {
+      this->send_data();
     }
   }
 }
 
 void DMXComponent::send_data() {
-  if (!this->enabled_) {
-    return;
-  }
-
-  if (this->mode_ != DMX_MODE_SEND) {
-    ESP_LOGV(TAG, "DMX '%s' port not in send mode, ignoring send request",
+  if (dmx_get_status(this->dmx_port_id_) == DMX_STATUS_SENDING) {
+    ESP_LOGV(TAG,
+             "DMX '%s': DMX busy with previous write, ignoring send request",
              this->name_.c_str());
     return;
   }
 
-  // If not waiting for send, check if we're within the timeout window since
-  // last send
-  if (!this->wait_for_send_) {
-    uint32_t now = millis();
-    uint32_t elapsed_ms = now - this->last_send_time_;
-    // Convert send_timeout_ticks_ to milliseconds (assuming ticks are in
-    // milliseconds based on typical DMX timing)
-    uint32_t timeout_ms = this->send_timeout_ticks_;
-
-    if (this->last_send_time_ != 0 && elapsed_ms < timeout_ms) {
-      ESP_LOGVV(TAG,
-                "DMX '%s': Ignoring send request - only %u ms since last send "
-                "(timeout: %u ms)",
-                this->name_.c_str(), elapsed_ms, timeout_ms);
-      return;
-    }
-  }
-
   ESP_LOGV(TAG, "DMX '%s': Sending data (512 bytes)", this->name_.c_str());
-  uint32_t send_start = millis();
   dmx_write(this->dmx_port_id_, this->dmx_data_, DMX_PACKET_SIZE);
   dmx_send(this->dmx_port_id_);
 
-  if (this->wait_for_send_) {
-    dmx_wait_sent(this->dmx_port_id_, this->send_timeout_ticks_);
-    ESP_LOGV(TAG, "DMX '%s': Data sent successfully (took %u ms)",
-             this->name_.c_str(), millis() - send_start);
-  } else {
-    this->last_send_time_ = millis();
-    ESP_LOGV(TAG, "DMX '%s': Data queued for send (non-blocking, took %u ms)",
-             this->name_.c_str(), millis() - send_start);
-  }
+  this->last_send_time_ = millis();
+  ESP_LOGV(TAG, "DMX '%s': Data queued for send (non-blocking, took %u ms)",
+           this->name_.c_str(), millis() - send_start);
 }
 
 void DMXComponent::read_universe(uint8_t *buffer, size_t buffer_size) {
@@ -125,13 +100,6 @@ void DMXComponent::write_universe(const uint8_t *data, size_t length) {
             this->name_.c_str(), length);
 }
 
-void DMXComponent::send_universe(const uint8_t *data, size_t length) {
-  ESP_LOGVV(TAG, "DMX '%s': Sending universe with %zu channels",
-            this->name_.c_str(), length);
-  write_universe(data, length);
-  send_data();
-}
-
 void DMXComponent::dump_config() {
   ESP_LOGCONFIG(TAG, "DMX:");
   if (!this->name_.empty()) {
@@ -141,8 +109,9 @@ void DMXComponent::dump_config() {
   ESP_LOGCONFIG(TAG, "  Mode: %s",
                 this->mode_ == DMX_MODE_SEND ? "SEND" : "RECEIVE");
   if (this->mode_ == DMX_MODE_SEND) {
-    ESP_LOGCONFIG(TAG, "  Wait for Send: %s",
-                  this->wait_for_send_ ? "YES" : "NO");
+    if (this->write_interval_ms_ > 0) {
+      ESP_LOGCONFIG(TAG, "  Write Interval: %d ms", this->write_interval_ms_);
+    }
   }
   if (this->mode_ == DMX_MODE_RECEIVE) {
     ESP_LOGCONFIG(TAG, "  Read Interval: %d ms", this->read_interval_ms_);
@@ -152,13 +121,6 @@ void DMXComponent::dump_config() {
   if (this->enable_pin_ != nullptr) {
     LOG_PIN("  Enable Pin: ", this->enable_pin_);
   }
-}
-
-void DMXComponent::send_channel(uint16_t channel, uint8_t value) {
-  ESP_LOGVV(TAG, "DMX '%s': Sending channel %d with value %d",
-            this->name_.c_str(), channel, value);
-  this->write_channel(channel, value);
-  this->send_data();
 }
 
 void DMXComponent::write_channel(uint16_t channel, uint8_t value) {

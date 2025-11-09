@@ -30,12 +30,14 @@ public:
   void set_read_interval(uint32_t interval_ms) {
     read_interval_ms_ = interval_ms;
   }
+  void set_write_interval(uint32_t interval_ms) {
+    write_interval_ms_ = interval_ms;
+  }
   void set_send_timeout_ticks(uint16_t ticks) { send_timeout_ticks_ = ticks; }
   void set_receive_timeout_ticks(uint16_t ticks) {
     receive_timeout_ticks_ = ticks;
   }
   void set_enabled(bool enabled) { enabled_ = enabled; }
-  void set_wait_for_send(bool wait_for_send) { wait_for_send_ = wait_for_send; }
 
   DMXMode get_mode() const { return mode_; }
 
@@ -44,9 +46,6 @@ public:
 
   /// Write and send a value to a DMX channel (1-512)
   void send_channel(uint16_t channel, uint8_t value);
-
-  // Write the DMX data to the bus and wait for sent
-  void send_data();
 
   /// Read a value from a DMX channel (1-512)
   uint8_t read_channel(uint16_t channel);
@@ -72,11 +71,14 @@ protected:
   DMXMode mode_{DMX_MODE_SEND};
   uint32_t read_interval_ms_{100};
   uint32_t last_read_time_{0};
+  uint32_t write_interval_ms_{0};
   uint16_t send_timeout_ticks_{100};
   uint16_t receive_timeout_ticks_{100};
   bool enabled_{true};
-  bool wait_for_send_{false};
   uint32_t last_send_time_{0};
+
+  // Write the DMX data to the bus and wait for sent
+  void send_data();
 };
 
 } // namespace esphome::dmx
