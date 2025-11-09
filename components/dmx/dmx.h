@@ -13,6 +13,11 @@ enum DMXMode {
   DMX_MODE_RECEIVE,
 };
 
+enum ConcurrencyResolution {
+  CONCURRENCY_RESOLUTION_HTP, // Highest Takes Precedence
+  CONCURRENCY_RESOLUTION_LTP, // Latest Takes Precedence
+};
+
 class DMXComponent : public Component {
 public:
   void setup() override;
@@ -38,6 +43,9 @@ public:
     receive_timeout_ticks_ = ticks;
   }
   void set_enabled(bool enabled) { enabled_ = enabled; }
+  void set_concurrency_resolution(ConcurrencyResolution resolution) {
+    concurrency_resolution_ = resolution;
+  }
 
   DMXMode get_mode() const { return mode_; }
 
@@ -76,6 +84,9 @@ protected:
   uint16_t receive_timeout_ticks_{100};
   bool enabled_{true};
   uint32_t last_send_time_{0};
+  ConcurrencyResolution concurrency_resolution_{CONCURRENCY_RESOLUTION_LTP};
+  uint8_t concurrency_buffer_[DMX_PACKET_SIZE]{}; // Buffer to track concurrent
+                                                  // writes
 
   // Write the DMX data to the bus and wait for sent
   void send_data();

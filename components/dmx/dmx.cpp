@@ -89,15 +89,27 @@ void DMXComponent::write_universe(const uint8_t *data, size_t length) {
              this->name_.c_str());
     return;
   }
-  // Clear buffer
-  memset(this->dmx_data_ + 1, 0, DMX_PACKET_SIZE - 1);
-  // Zero byte in DMX packet is the DMX start code. Always 0x00.
+  // Make sure zero byte in DMX packet is the DMX start code. Always 0x00.
   this->dmx_data_[0] = 0x00;
 
   length = std::min(length, static_cast<size_t>(DMX_PACKET_SIZE - 1));
-  memcpy(this->dmx_data_ + 1, data, length);
-  ESP_LOGVV(TAG, "DMX '%s': Universe written with %zu channels",
-            this->name_.c_str(), length);
+
+  if (this->concurrency_resolution_ == CONCURRENCY_RESOLUTION_HTP) {
+    // HTP: Merge with existing data, keeping the highest value for each channel
+    for (size_t i = 0; i < length; i++) {
+      uint8_t new_value = data[i];
+      uint8_t current_value = this->dmx_data_[i + 1];
+      this->dmx_data_[i + 1] =
+          (new_value > current_value) ? new_value : current_value;
+    }
+    ESP_LOGVV(TAG, "DMX '%s': Universe merged (HTP) with %zu channels",
+              this->name_.c_str(), length);
+  } else {
+    // LTP: Copy new data
+    memcpy(this->dmx_data_ + 1, data, length);
+    ESP_LOGVV(TAG, "DMX '%s': Universe written (LTP) with %zu channels",
+              this->name_.c_str(), length);
+  }
 }
 
 void DMXComponent::dump_config() {
@@ -112,6 +124,10 @@ void DMXComponent::dump_config() {
     if (this->write_interval_ms_ > 0) {
       ESP_LOGCONFIG(TAG, "  Write Interval: %d ms", this->write_interval_ms_);
     }
+    ESP_LOGCONFIG(TAG, "  Concurrency Resolution: %s",
+                  this->concurrency_resolution_ == CONCURRENCY_RESOLUTION_HTP
+                      ? "HTP"
+                      : "LTP");
   }
   if (this->mode_ == DMX_MODE_RECEIVE) {
     ESP_LOGCONFIG(TAG, "  Read Interval: %d ms", this->read_interval_ms_);
@@ -134,10 +150,16 @@ void DMXComponent::write_channel(uint16_t channel, uint8_t value) {
     ESP_LOGW(TAG, "Invalid DMX channel: %d (must be 1-512)", channel);
     return;
   }
-  // Zero slot in DMX packet is the DMX start code. Don't offset by -1.
-  this->dmx_data_[channel] = value;
-  ESP_LOGVV(TAG, "DMX '%s': Channel %d set to %d", this->name_.c_str(), channel,
-            value);
+
+  // Apply concurrency resolution strategy
+  if (this->concurrency_resolution_ == CONCURRENCY_RESOLUTION_HTP) {
+    // HTP: Keep the highest value
+    this->dmx_data_[channel] =
+        (value > this->dmx_data_[channel]) ? value : this->dmx_data_[channel];
+  } else {
+    // LTP: Always take the latest value
+    this->dmx_data_[channel] = value;
+  }
 }
 
 uint8_t DMXComponent::read_channel(uint16_t channel) {

@@ -17,14 +17,21 @@ CONF_WRITE_INTERVAL = "write_interval"
 CONF_SEND_TIMEOUT_TICKS = "send_timeout_ticks"
 CONF_RECEIVE_TIMEOUT_TICKS = "receive_timeout_ticks"
 CONF_NAME = "name"
+CONF_CONCURRENCY_RESOLUTION = "concurrency_resolution"
 
 dmx_ns = cg.esphome_ns.namespace("dmx")
 DMXComponent = dmx_ns.class_("DMXComponent", cg.Component)
 DMXMode = dmx_ns.enum("DMXMode")
+ConcurrencyResolution = dmx_ns.enum("ConcurrencyResolution")
 
 DMX_MODES = {
     "send": DMXMode.DMX_MODE_SEND,
     "receive": DMXMode.DMX_MODE_RECEIVE,
+}
+
+CONCURRENCY_RESOLUTIONS = {
+    "HTP": ConcurrencyResolution.CONCURRENCY_RESOLUTION_HTP,
+    "LTP": ConcurrencyResolution.CONCURRENCY_RESOLUTION_LTP,
 }
 
 DMX_COMPONENT_SCHEMA = cv.Schema(
@@ -41,6 +48,7 @@ DMX_COMPONENT_SCHEMA = cv.Schema(
         cv.Optional(CONF_WRITE_INTERVAL, default="25ms"): cv.positive_time_period_milliseconds,
         cv.Optional(CONF_SEND_TIMEOUT_TICKS, default=100): cv.int_range(min=0, max=1250),
         cv.Optional(CONF_RECEIVE_TIMEOUT_TICKS, default=100): cv.int_range(min=0, max=1250),
+        cv.Optional(CONF_CONCURRENCY_RESOLUTION, default="LTP"): cv.enum(CONCURRENCY_RESOLUTIONS, upper=True),
     }
 ).extend(cv.COMPONENT_SCHEMA)
 
@@ -72,6 +80,7 @@ async def to_code(config):
         cg.add(var.set_send_timeout_ticks(conf[CONF_SEND_TIMEOUT_TICKS]))
         cg.add(var.set_receive_timeout_ticks(conf[CONF_RECEIVE_TIMEOUT_TICKS]))
         cg.add(var.set_enabled(conf[CONF_ENABLED]))
+        cg.add(var.set_concurrency_resolution(conf[CONF_CONCURRENCY_RESOLUTION]))
 
     # Add esp_dmx library once
     cg.add_library(
