@@ -35,6 +35,7 @@ public:
     receive_timeout_ticks_ = ticks;
   }
   void set_enabled(bool enabled) { enabled_ = enabled; }
+  void set_wait_for_send(bool wait_for_send) { wait_for_send_ = wait_for_send; }
 
   DMXMode get_mode() const { return mode_; }
 
@@ -74,6 +75,8 @@ protected:
   uint16_t send_timeout_ticks_{100};
   uint16_t receive_timeout_ticks_{100};
   bool enabled_{true};
+  bool wait_for_send_{false};
+  uint32_t last_send_time_{0};
 };
 
 } // namespace esphome::dmx

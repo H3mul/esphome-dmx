@@ -60,14 +60,43 @@ void DMXComponent::send_data() {
   }
 
   if (this->mode_ != DMX_MODE_SEND) {
-    ESP_LOGV(TAG, "DMX port not in send mode, ignoring send request");
+    ESP_LOGV(TAG, "DMX '%s' port not in send mode, ignoring send request",
+             this->name_.c_str());
     return;
   }
+
+  // If not waiting for send, check if we're within the timeout window since
+  // last send
+  if (!this->wait_for_send_) {
+    uint32_t now = millis();
+    uint32_t elapsed_ms = now - this->last_send_time_;
+    // Convert send_timeout_ticks_ to milliseconds (assuming ticks are in
+    // milliseconds based on typical DMX timing)
+    uint32_t timeout_ms = this->send_timeout_ticks_;
+
+    if (this->last_send_time_ != 0 && elapsed_ms < timeout_ms) {
+      ESP_LOGVV(TAG,
+                "DMX '%s': Ignoring send request - only %u ms since last send "
+                "(timeout: %u ms)",
+                this->name_.c_str(), elapsed_ms, timeout_ms);
+      return;
+    }
+  }
+
   ESP_LOGV(TAG, "DMX '%s': Sending data (512 bytes)", this->name_.c_str());
+  uint32_t send_start = millis();
   dmx_write(this->dmx_port_id_, this->dmx_data_, DMX_PACKET_SIZE);
   dmx_send(this->dmx_port_id_);
-  dmx_wait_sent(this->dmx_port_id_, this->send_timeout_ticks_);
-  ESP_LOGV(TAG, "DMX '%s': Data sent successfully", this->name_.c_str());
+
+  if (this->wait_for_send_) {
+    dmx_wait_sent(this->dmx_port_id_, this->send_timeout_ticks_);
+    ESP_LOGV(TAG, "DMX '%s': Data sent successfully (took %u ms)",
+             this->name_.c_str(), millis() - send_start);
+  } else {
+    this->last_send_time_ = millis();
+    ESP_LOGV(TAG, "DMX '%s': Data queued for send (non-blocking, took %u ms)",
+             this->name_.c_str(), millis() - send_start);
+  }
 }
 
 void DMXComponent::read_universe(uint8_t *buffer, size_t buffer_size) {
@@ -111,6 +140,10 @@ void DMXComponent::dump_config() {
   ESP_LOGCONFIG(TAG, "  Port: %d", this->dmx_port_id_);
   ESP_LOGCONFIG(TAG, "  Mode: %s",
                 this->mode_ == DMX_MODE_SEND ? "SEND" : "RECEIVE");
+  if (this->mode_ == DMX_MODE_SEND) {
+    ESP_LOGCONFIG(TAG, "  Wait for Send: %s",
+                  this->wait_for_send_ ? "YES" : "NO");
+  }
   if (this->mode_ == DMX_MODE_RECEIVE) {
     ESP_LOGCONFIG(TAG, "  Read Interval: %d ms", this->read_interval_ms_);
   }
