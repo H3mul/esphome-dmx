@@ -12,9 +12,8 @@ CONF_ENABLE_PIN = "enable_pin"
 CONF_TX_PIN = "tx_pin"
 CONF_RX_PIN = "rx_pin"
 CONF_DMX_PORT_ID = "dmx_port_id"
-CONF_READ_INTERVAL = "read_interval"
-CONF_WRITE_INTERVAL = "write_interval"
-CONF_SEND_TIMEOUT_TICKS = "send_timeout_ticks"
+CONF_READ_FREQUENCY = "read_frequency"
+CONF_WRITE_FREQUENCY = "write_frequency"
 CONF_RECEIVE_TIMEOUT_TICKS = "receive_timeout_ticks"
 CONF_NAME = "name"
 CONF_CONCURRENCY_RESOLUTION = "concurrency_resolution"
@@ -44,9 +43,8 @@ DMX_COMPONENT_SCHEMA = cv.Schema(
         cv.Required(CONF_ENABLE_PIN): pins.gpio_output_pin_schema,
         cv.Required(CONF_DMX_PORT_ID): cv.int_range(min=0, max=2),
         cv.Optional(CONF_MODE, default="send"): cv.enum(DMX_MODES, lower=True),
-        cv.Optional(CONF_READ_INTERVAL, default="100ms"): cv.positive_time_period_milliseconds,
-        cv.Optional(CONF_WRITE_INTERVAL, default="25ms"): cv.positive_time_period_milliseconds,
-        cv.Optional(CONF_SEND_TIMEOUT_TICKS, default=100): cv.int_range(min=0, max=1250),
+        cv.Optional(CONF_READ_FREQUENCY, default=40.0): cv.float_range(min=0.1, max=44.1),
+        cv.Optional(CONF_WRITE_FREQUENCY, default=40.0): cv.float_range(min=0.1, max=44.1),
         cv.Optional(CONF_RECEIVE_TIMEOUT_TICKS, default=100): cv.int_range(min=0, max=1250),
         cv.Optional(CONF_CONCURRENCY_RESOLUTION, default="LTP"): cv.enum(CONCURRENCY_RESOLUTIONS, upper=True),
     }
@@ -75,9 +73,8 @@ async def to_code(config):
 
         cg.add(var.set_dmx_port_id(conf[CONF_DMX_PORT_ID]))
         cg.add(var.set_mode(conf[CONF_MODE]))
-        cg.add(var.set_read_interval(conf[CONF_READ_INTERVAL]))
-        cg.add(var.set_write_interval(conf[CONF_WRITE_INTERVAL]))
-        cg.add(var.set_send_timeout_ticks(conf[CONF_SEND_TIMEOUT_TICKS]))
+        cg.add(var.set_read_frequency(conf[CONF_READ_FREQUENCY]))
+        cg.add(var.set_write_frequency(conf[CONF_WRITE_FREQUENCY]))
         cg.add(var.set_receive_timeout_ticks(conf[CONF_RECEIVE_TIMEOUT_TICKS]))
         cg.add(var.set_enabled(conf[CONF_ENABLED]))
         cg.add(var.set_concurrency_resolution(conf[CONF_CONCURRENCY_RESOLUTION]))

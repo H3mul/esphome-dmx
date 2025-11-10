@@ -3,6 +3,8 @@
 #include "esphome/core/component.h"
 #include "esphome/core/gpio.h"
 #include "esphome/core/hal.h"
+#include "esphome/core/helpers.h"
+#include "esphome/core/log.h"
 #include <esp_dmx.h>
 #include <string>
 
@@ -32,13 +34,16 @@ public:
   void set_enable_pin(InternalGPIOPin *pin) { enable_pin_ = pin; }
   void set_dmx_port_id(int port_id) { dmx_port_id_ = port_id; }
   void set_mode(DMXMode mode) { mode_ = mode; }
-  void set_read_interval(uint32_t interval_ms) {
-    read_interval_ms_ = interval_ms;
+  void set_read_frequency(float frequency_hz) {
+    // Maximum 44.1 Hz per DMX spec
+    float clamped_frequency_hz = std::min(frequency_hz, 44.1f);
+    read_interval_ms_ = (uint32_t)(1000.0f / clamped_frequency_hz);
   }
-  void set_write_interval(uint32_t interval_ms) {
-    write_interval_ms_ = interval_ms;
+  void set_write_frequency(float frequency_hz) {
+    // Maximum 44.1 Hz per DMX spec
+    float clamped_frequency_hz = std::min(frequency_hz, 44.1f);
+    write_interval_ms_ = (uint32_t)(1000.0f / clamped_frequency_hz);
   }
-  void set_send_timeout_ticks(uint16_t ticks) { send_timeout_ticks_ = ticks; }
   void set_receive_timeout_ticks(uint16_t ticks) {
     receive_timeout_ticks_ = ticks;
   }
@@ -80,7 +85,6 @@ protected:
   uint32_t read_interval_ms_{100};
   uint32_t last_read_time_{0};
   uint32_t write_interval_ms_{0};
-  uint16_t send_timeout_ticks_{100};
   uint16_t receive_timeout_ticks_{100};
   bool enabled_{true};
   uint32_t last_send_time_{0};

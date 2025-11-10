@@ -58,20 +58,21 @@ void DMXComponent::loop() {
 }
 
 void DMXComponent::send_data() {
-  if (dmx_get_status(this->dmx_port_id_) == DMX_STATUS_SENDING) {
-    ESP_LOGV(TAG,
-             "DMX '%s': DMX busy with previous write, ignoring send request",
-             this->name_.c_str());
+  int dmx_status = dmx_get_status(this->dmx_port_id_);
+  if (dmx_status == DMX_STATUS_SENDING) {
+    ESP_LOGD(TAG,
+             "DMX '%s': DMX busy with previous write (status: %d), ignoring "
+             "send request",
+             this->name_.c_str(), dmx_status);
     return;
   }
 
-  ESP_LOGV(TAG, "DMX '%s': Sending data (512 bytes)", this->name_.c_str());
+  ESP_LOGVV(TAG, "DMX '%s': status: %d Sending data (512 bytes)",
+            this->name_.c_str(), dmx_status);
   dmx_write(this->dmx_port_id_, this->dmx_data_, DMX_PACKET_SIZE);
   dmx_send(this->dmx_port_id_);
 
   this->last_send_time_ = millis();
-  ESP_LOGV(TAG, "DMX '%s': Data queued for send (non-blocking, took %u ms)",
-           this->name_.c_str(), millis() - send_start);
 }
 
 void DMXComponent::read_universe(uint8_t *buffer, size_t buffer_size) {
@@ -121,16 +122,16 @@ void DMXComponent::dump_config() {
   ESP_LOGCONFIG(TAG, "  Mode: %s",
                 this->mode_ == DMX_MODE_SEND ? "SEND" : "RECEIVE");
   if (this->mode_ == DMX_MODE_SEND) {
-    if (this->write_interval_ms_ > 0) {
-      ESP_LOGCONFIG(TAG, "  Write Interval: %d ms", this->write_interval_ms_);
-    }
+    float write_frequency = 1000.0f / this->write_interval_ms_;
+    ESP_LOGCONFIG(TAG, "  Write Frequency: %.1f Hz", write_frequency);
     ESP_LOGCONFIG(TAG, "  Concurrency Resolution: %s",
                   this->concurrency_resolution_ == CONCURRENCY_RESOLUTION_HTP
                       ? "HTP"
                       : "LTP");
   }
   if (this->mode_ == DMX_MODE_RECEIVE) {
-    ESP_LOGCONFIG(TAG, "  Read Interval: %d ms", this->read_interval_ms_);
+    float read_frequency = 1000.0f / this->read_interval_ms_;
+    ESP_LOGCONFIG(TAG, "  Read Frequency: %.1f Hz", read_frequency);
   }
   LOG_PIN("  TX Pin: ", this->tx_pin_);
   LOG_PIN("  RX Pin: ", this->rx_pin_);
@@ -154,11 +155,23 @@ void DMXComponent::write_channel(uint16_t channel, uint8_t value) {
   // Apply concurrency resolution strategy
   if (this->concurrency_resolution_ == CONCURRENCY_RESOLUTION_HTP) {
     // HTP: Keep the highest value
+    uint8_t old_value = this->dmx_data_[channel];
     this->dmx_data_[channel] =
         (value > this->dmx_data_[channel]) ? value : this->dmx_data_[channel];
+    if (value > old_value) {
+      ESP_LOGVV(TAG, "DMX '%s': Channel %d set to %d (HTP, updated)",
+                this->name_.c_str(), channel, value);
+    } else {
+      ESP_LOGVV(TAG,
+                "DMX '%s': Channel %d not updated - %d is not higher than %d "
+                "(HTP)",
+                this->name_.c_str(), channel, value, old_value);
+    }
   } else {
     // LTP: Always take the latest value
     this->dmx_data_[channel] = value;
+    ESP_LOGVV(TAG, "DMX '%s': Channel %d set to %d (LTP)", this->name_.c_str(),
+              channel, value);
   }
 }
 
