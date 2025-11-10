@@ -2,9 +2,6 @@
 
 #include "esphome/core/component.h"
 #include "esphome/core/gpio.h"
-#include "esphome/core/hal.h"
-#include "esphome/core/helpers.h"
-#include "esphome/core/log.h"
 #include <esp_dmx.h>
 #include <string>
 
@@ -57,20 +54,14 @@ public:
   /// Write a value to a DMX channel (1-512)
   void write_channel(uint16_t channel, uint8_t value);
 
-  /// Write and send a value to a DMX channel (1-512)
-  void send_channel(uint16_t channel, uint8_t value);
-
   /// Read a value from a DMX channel (1-512)
-  uint8_t read_channel(uint16_t channel);
+  uint8_t read_channel(uint16_t channel) const;
 
   /// Read the DMX universe buffer (copies data to provided buffer)
-  void read_universe(uint8_t *buffer, size_t buffer_size);
+  void read_universe(uint8_t *buffer, size_t buffer_size) const;
 
   /// Write a whole DMX universe (packet) to the internal buffer
   void write_universe(const uint8_t *data, size_t length);
-
-  /// Write and send a whole DMX universe (packet)
-  void send_universe(const uint8_t *data, size_t length);
 
   dmx_port_t get_port() const { return dmx_port_id_; }
 
@@ -80,7 +71,6 @@ protected:
   InternalGPIOPin *rx_pin_{nullptr};
   InternalGPIOPin *enable_pin_{nullptr};
   dmx_port_t dmx_port_id_{DMX_NUM_0};
-  uint8_t dmx_data_[DMX_PACKET_SIZE]{};
   DMXMode mode_{DMX_MODE_SEND};
   uint32_t read_interval_ms_{100};
   uint32_t last_read_time_{0};
